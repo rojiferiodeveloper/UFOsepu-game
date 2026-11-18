@@ -93,7 +93,7 @@ body {
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 <link rel="manifest" href="index.manifest.json">
-<script>(function(){function pc(){var d=document,e=d.documentElement;if(d.fullscreenElement||d.webkitFullscreenElement)return;var r=e.requestFullscreen||e.webkitRequestFullscreen;if(!r)return;try{var p=r.call(e,{navigationUI:'hide'});if(p&&p.then)p.then(function(){try{screen.orientation.lock('landscape').catch(function(){})}catch(x){}}).catch(function(){})}catch(x){}}document.addEventListener('pointerup',pc,true);document.addEventListener('touchend',pc,true);document.addEventListener('keydown',function(k){if(k.key!=='Escape')pc()},true);})();</script>
+<style>#ufo-jugar{position:fixed;inset:0;z-index:9999;background:#120d24;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4vmin;font-family:monospace;text-align:center}#ufo-jugar h1{margin:0;font-size:11vmin;letter-spacing:.08em;color:#fad448;text-shadow:.7vmin .7vmin 0 #8a1820}#ufo-jugar h2{margin:0;font-size:3.6vmin;color:#9ad8ff;letter-spacing:.2em}#ufo-btn{font:bold 7vmin monospace;color:#fff;background:#e2464f;border:0;border-radius:1.2vmin;padding:2.6vmin 8vmin;box-shadow:0 1.2vmin 0 #8a1820;cursor:pointer}#ufo-btn:active{transform:translateY(1vmin);box-shadow:0 .2vmin 0 #8a1820}#ufo-jugar p{margin:0;max-width:80vw;font-size:3.4vmin;line-height:1.5;color:#d8d2ec}</style><script>(function(){var ios=/iPhone|iPod/.test(navigator.userAgent);var app=navigator.standalone===true||matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches;function pc(){var d=document,e=d.documentElement;if(d.fullscreenElement||d.webkitFullscreenElement)return;var r=e.requestFullscreen||e.webkitRequestFullscreen;if(!r)return;try{var p=r.call(e,{navigationUI:'hide'});if(p&&p.then)p.then(function(){try{screen.orientation.lock('landscape').catch(function(){})}catch(x){}}).catch(function(){})}catch(x){}}function crear(){var d=document.createElement('div');d.id='ufo-jugar';d.innerHTML='<h1>UFO SEPU</h1><h2>LA INVASIÓN DE QUINTANA</h2><button id=ufo-btn>&#9654; JUGAR</button>'+(ios&&!app?'<p>En iPhone, para jugarlo a pantalla completa: pulsa Compartir y luego «Añadir a pantalla de inicio», y ábrelo desde ese icono.</p>':'');document.body.appendChild(d);document.getElementById('ufo-btn').addEventListener('click',function(){pc();window.ufoJugar=true;d.remove();});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',crear);else crear();document.addEventListener('pointerup',function(){if(window.ufoJugar)pc();},true);})();</script>
 	</head>
 	<body>
 		<canvas id="canvas">
@@ -112,7 +112,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":11353604,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":11366840,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
