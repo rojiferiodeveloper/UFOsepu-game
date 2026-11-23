@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1795185159|28842600';
+const CACHE_VERSION = '1795425407|29829757';
 /** @type {string} */
 const CACHE_PREFIX = 'UFO SEPU: la inv-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
