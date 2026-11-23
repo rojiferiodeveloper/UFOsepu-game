@@ -24,7 +24,7 @@
 </head>
 <body>
 <canvas id="lienzo" width="480" height="270" aria-label="Cuenta atrás para el lanzamiento de UFO SEPU el 1 de diciembre"></canvas>
-<noscript>UFO SEPU: la invasión de Quintana. Lanzamiento el 1 de diciembre. <a href="juego/">Jugar</a></noscript>
+<noscript>UFO SEPU: la invasión de Quintana. Lanzamiento el 1 de diciembre.</noscript>
 <script>
 "use strict";
 // 1 de diciembre de 2026, 00:00 en Madrid (hora de invierno, UTC+1)
@@ -168,7 +168,7 @@ lienzo.addEventListener("click", () => { if (listo) location.href = JUEGO; });
 
 Promise.all([cargar("img/cielo.png"), cargar("img/logo.png"), cargar("img/platillo.png"), cargarFuente()])
   .then(([c, l, p]) => { cielo = c; logo = l; platillo = p; requestAnimationFrame(dibujar); })
-  .catch(() => { document.body.innerHTML = '<p style="color:#fad448;font:16px monospace;text-align:center;padding:16px">UFO SEPU: la invasión de Quintana. Lanzamiento el 1 de diciembre. <a style="color:#d9d1f2" href="juego/">Jugar</a></p>'; });
+  .catch(() => { document.body.innerHTML = '<p style="color:#fad448;font:16px monospace;text-align:center;padding:16px">UFO SEPU: la invasión de Quintana. Lanzamiento el 1 de diciembre.</p>'; });
 </script>
 </body>
 </html>
