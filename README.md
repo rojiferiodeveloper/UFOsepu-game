@@ -1,5 +1,7 @@
-# UFO SEPU: la invasión de Quintana (demo)
+# UFO SEPU: la invasión de Quintana
 
-Juega en el navegador: https://rojiferiodeveloper.github.io/UFOsepu-game/
+Web (cuenta atrás para el lanzamiento, 1 de diciembre): https://rojiferiodeveloper.github.io/UFOsepu-game/
 
-Esta repo solo tiene el juego compilado (Godot 4, exportación Web), generado desde la versión a309482.
+Juego en el navegador: https://rojiferiodeveloper.github.io/UFOsepu-game/juego/
+
+Esta repo solo tiene la web y el juego compilado (Godot 4, exportación Web), generado desde la versión a309482.
