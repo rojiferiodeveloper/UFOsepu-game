@@ -2,7 +2,8 @@
 <!-- Cuenta atrás para el lanzamiento de UFO SEPU (1 de diciembre). Página de entrada de la repo pública: se dibuja en un
      lienzo de 480x270 como el juego (fondo del título, logo, fuente ufo_negrita). Cuando llega la hora salen dos
      botones: JUGAR (al juego, juego/; en iPhone antes explica cómo añadirlo a la pantalla de inicio) y DESCARGAR PARA
-     PC (el instalador de Windows). Para verla antes de hora: ?ya (y &plataforma=ios).
+     PC (el instalador de Windows). Abajo, siempre, el botón RÉCORDS (records/). Para verla antes de hora: ?ya
+     (y &plataforma=ios).
      La monta Tools/web/publicar_demo.sh junto con las imágenes de img/. -->
 <html lang="es">
 <head>
@@ -37,6 +38,7 @@
 // 1 de diciembre de 2026, 00:00 en Madrid (hora de invierno, UTC+1)
 const LANZAMIENTO = Date.parse("2026-12-01T00:00:00+01:00");
 const JUEGO = "juego/";
+const RECORDS = "records/";
 // El instalador de Windows va en la última Release de la repo pública (lo sube publicar_demo.sh desde el lanzamiento)
 const INSTALADOR = "https://github.com/rojiferiodeveloper/UFOsepu-game/releases/latest/download/UFO_SEPU_instalador.exe";
 // Fichas de las tiendas: vacías = no sale el botón (se rellenan cuando estén publicadas)
@@ -140,6 +142,7 @@ function dosCifras(n) { return String(n).padStart(2, "0"); }
 let listo = false, finDesde = 0;
 function dibujar(ms) {
   const t = ms / 1000;
+  botones = [];
   ctx.drawImage(cielo, 0, 0);
   // estrellas que titilan
   for (const e of estrellas) {
@@ -175,6 +178,7 @@ function dibujar(ms) {
   } else {
     eleccion(ms);
   }
+  if (!ayudaIOS) boton(170, 244, 140, 20, "► RÉCORDS", () => ir(RECORDS), false);
   requestAnimationFrame(dibujar);
 }
 
@@ -199,7 +203,6 @@ function boton(x, y, w, h, texto, accion, principal, sub) {
 }
 
 function eleccion(ms) {
-  botones = [];
   ctx.globalAlpha = Math.min(1, (ms - finDesde) / 400);
   ctx.fillStyle = "rgba(8,5,15,0.78)";
   ctx.fillRect(0, 84, W, 186);
@@ -239,7 +242,6 @@ lienzo.addEventListener("pointermove", (ev) => {
 });
 lienzo.addEventListener("pointerleave", () => { raton = null; });
 lienzo.addEventListener("click", (ev) => {
-  if (!listo) return;
   const p = aLienzo(ev);
   const b = botones.find(b => p.x >= b.x && p.x < b.x + b.w && p.y >= b.y && p.y < b.y + b.h);
   if (b) b.accion();

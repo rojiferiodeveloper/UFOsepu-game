@@ -1,0 +1,301 @@
+<!doctype html>
+<!-- Récords de UFO SEPU en la web (records/): la pantalla de récords de una recreativa de los 90, dibujada en un lienzo
+     de 480 de ancho con el arte del juego (logo, fuentes ufo_negrita y ufo_texto, botones de la interfaz, el Alien).
+     Lee las cinco tablas de Supabase igual que el juego (scripts/ranking.gd): ranking_<tabla>, con la clave pública.
+     Las pestañas van cambiando solas (modo demo) hasta que se toca una. ?tabla=speedrun abre esa tabla.
+     Diseño: Docs/web_rankings/ (opción A, «Fósforo»). La monta Tools/web/publicar_demo.sh, que pone la URL y la clave
+     de Supabase de project.godot en https://gwifezglmzbjteytvmcz.supabase.co y sb_publishable_kR_EFExSEePtPflVNI-Cgg_Z0HyvPws y copia las imágenes a ../img/. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Récords del barrio · UFO SEPU</title>
+<meta name="description" content="Los mejores de UFO SEPU: la invasión de Quintana. Quién se lo pasó antes, porcentaje, menos muertes, speedrun y la Cucaracha de Oro y Diamantes.">
+<meta property="og:title" content="Récords del barrio · UFO SEPU">
+<meta property="og:description" content="Los mejores de todo el mundo, como en las recreativas.">
+<meta property="og:image" content="https://rojiferiodeveloper.github.io/UFOsepu-game/img/cielo.png">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="../img/icono.png">
+<style>
+  html, body { margin: 0; background: #000; min-height: 100%; }
+  body { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+  .pantalla { position: relative; margin: auto; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+  /* líneas de barrido: una línea más oscura por cada píxel del juego (se ajusta a la escala desde el script) */
+  .pantalla::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--p) - var(--l)),
+      rgba(0,0,0,0.28) calc(var(--p) - var(--l)), rgba(0,0,0,0.28) var(--p)); }
+  noscript, .sin { color: #fad448; font: 16px monospace; text-align: center; padding: 16px; display: block; }
+</style>
+</head>
+<body>
+<div class="pantalla" id="pantalla">
+  <canvas id="lienzo" width="480" height="572" aria-label="Récords de UFO SEPU"></canvas>
+</div>
+<noscript>Récords de UFO SEPU: hace falta JavaScript para verlos.</noscript>
+<script>
+"use strict";
+const SUPABASE_URL = "https://gwifezglmzbjteytvmcz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_kR_EFExSEePtPflVNI-Cgg_Z0HyvPws";
+const W = 480, H = 572;
+const AMARILLO = "#fad448", CLARO = "#d9d1f2", GRIS = "#9994b3", TENUE = "#6e688c", RAYA = "#3c3462";
+// arco iris de recreativa: un color por puesto, del caliente al frío
+const ARCO = ["#ff5c5c", "#ff9442", "#fad448", "#aae85a", "#54e296", "#48d6e2", "#60a0ff", "#9680ff", "#cc70f0", "#f06ec4"];
+const TABLAS = ["final", "porcentaje", "muertes", "speedrun", "cucaracha"];
+const PESTANA = { final: "ORDEN", porcentaje: "PORCENTAJE", muertes: "MUERTES", speedrun: "SPEEDRUN", cucaracha: "CUCARACHA" };
+const COLUMNA = { final: "FECHA", porcentaje: "COMPLETADO", muertes: "MUERTES", speedrun: "TIEMPO", cucaracha: "FECHA" };
+const EXPLICA = { final: "Quién se lo pasó antes", porcentaje: "Porcentaje completado del juego",
+  muertes: "Menos muertes al pasárselo", speedrun: "Menos tiempo de juego al pasárselo",
+  cucaracha: "Quién encontró antes la Cucaracha de Oro y Diamantes" };
+const FILAS = 10;
+const DEMO_SEG = 7;            // segundos por tabla en el modo demo
+
+const PARAMS = new URLSearchParams(location.search);
+let tabla = TABLAS.includes(PARAMS.get("tabla")) ? PARAMS.get("tabla") : "final";
+let demo = !PARAMS.has("tabla");
+let cambio = 0;                // cuándo se cambió de tabla (para el barrido de entrada de las filas)
+
+const lienzo = document.getElementById("lienzo");
+const pantalla = document.getElementById("pantalla");
+const ctx = lienzo.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+// Escala: entera (pixel perfect) si así casi llena; si no, lo que quepa a lo ancho. En pantallas bajas (móvil en
+// horizontal) no se encoge por debajo de ×1: se hace scroll.
+function ajustar() {
+  const dpr = window.devicePixelRatio || 1;
+  const aw = document.documentElement.clientWidth || innerWidth;   // sin la barra de scroll
+  const ah = innerHeight;
+  const cabe = Math.min(aw / W, Math.max(ah / H, Math.min(1, aw / W)));
+  const entero = Math.floor(cabe * dpr);
+  const css = entero >= 1 && entero >= 0.85 * cabe * dpr ? entero / dpr : cabe;
+  lienzo.style.width = (W * css) + "px";
+  lienzo.style.height = (H * css) + "px";
+  pantalla.style.setProperty("--p", css + "px");
+  pantalla.style.setProperty("--l", Math.max(1 / dpr, css / 3) + "px");
+}
+addEventListener("resize", ajustar);
+addEventListener("load", ajustar);
+new ResizeObserver(ajustar).observe(document.documentElement);
+ajustar();
+
+function cargar(src) {
+  return new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = src; });
+}
+
+// --- Fuentes BMFont del juego: glifos blancos que se tiñen por color ---
+function nuevaFuente() { return { chars: {}, tintes: {} }; }
+const NEGRITA = nuevaFuente(), TEXTO = nuevaFuente();
+async function cargarFuente(f, nombre) {
+  const [txt, img] = await Promise.all([fetch("../img/" + nombre + ".fnt").then(r => r.text()), cargar("../img/" + nombre + ".png")]);
+  for (const linea of txt.split("\n")) {
+    if (!linea.startsWith("char ")) continue;
+    const c = {};
+    for (const m of linea.matchAll(/(\w+)=(-?\d+)/g)) c[m[1]] = +m[2];
+    f.chars[c.id] = c;
+  }
+  f.img = img;
+}
+function tinte(f, color) {
+  if (!f.tintes[color]) {
+    const c = document.createElement("canvas");
+    c.width = f.img.width; c.height = f.img.height;
+    const x = c.getContext("2d");
+    x.drawImage(f.img, 0, 0);
+    x.globalCompositeOperation = "source-in";
+    x.fillStyle = color;
+    x.fillRect(0, 0, c.width, c.height);
+    f.tintes[color] = c;
+  }
+  return f.tintes[color];
+}
+function ancho(f, texto, esc = 1) {
+  let a = 0;
+  for (const ch of texto) a += (f.chars[ch.codePointAt(0)] || f.chars[32] || { xadvance: 4 }).xadvance;
+  return a * esc;
+}
+function escribir(f, texto, x, y, color, esc = 1) {
+  const t = tinte(f, color);
+  for (const ch of texto) {
+    const c = f.chars[ch.codePointAt(0)];
+    if (!c) { x += 4 * esc; continue; }
+    if (c.width) ctx.drawImage(t, c.x, c.y, c.width, c.height, x + c.xoffset * esc, y + c.yoffset * esc, c.width * esc, c.height * esc);
+    x += c.xadvance * esc;
+  }
+}
+function centrado(f, texto, cx, y, color, esc = 1) { escribir(f, texto, Math.round(cx - ancho(f, texto, esc) / 2), y, color, esc); }
+function derecha(f, texto, xd, y, color, esc = 1) { escribir(f, texto, xd - ancho(f, texto, esc), y, color, esc); }
+
+// Panel de nueve partes, como los botones del juego (esquinas de 4 px)
+function nueve(img, x, y, w, h, m = 4) {
+  const iw = img.width, ih = img.height;
+  const sx = [0, m, iw - m, iw], sy = [0, m, ih - m, ih];
+  const dx = [x, x + m, x + w - m, x + w], dy = [y, y + m, y + h - m, y + h];
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    const dw = dx[j + 1] - dx[j], dh = dy[i + 1] - dy[i];
+    if (dw > 0 && dh > 0) ctx.drawImage(img, sx[j], sy[i], sx[j + 1] - sx[j], sy[i + 1] - sy[i], dx[j], dy[i], dw, dh);
+  }
+}
+
+// --- Datos (como scripts/ranking.gd) ---
+let datos = null, estado = "cargando";
+function textoFecha(iso) { return iso && iso.length >= 10 ? iso.substr(8, 2) + "/" + iso.substr(5, 2) + "/" + iso.substr(2, 2) : ""; }
+function textoTiempo(s) { s = Math.floor(s); return Math.floor(s / 3600) + ":" + String(Math.floor(s / 60) % 60).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
+function textoValor(t, f) {
+  switch (t) {
+    case "final": case "cucaracha": return textoFecha(String(f.fecha || ""));
+    case "porcentaje": return Math.floor(+f.valor || 0) + " %";
+    case "muertes": { const m = Math.floor(+f.valor || 0); return m + (m === 1 ? " MUERTE" : " MUERTES"); }
+    case "speedrun": return textoTiempo(+f.valor || 0);
+  }
+  return "";
+}
+async function leer() {
+  if (!SUPABASE_URL.startsWith("http")) { estado = "error"; return; }
+  const cab = { apikey: SUPABASE_KEY };
+  if (SUPABASE_KEY.startsWith("eyJ")) cab.Authorization = "Bearer " + SUPABASE_KEY;
+  try {
+    const res = await Promise.all(TABLAS.map(t =>
+      fetch(SUPABASE_URL + "/rest/v1/ranking_" + t + "?select=*&limit=" + FILAS, { headers: cab })
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })));
+    datos = {};
+    TABLAS.forEach((t, i) => { datos[t] = Array.isArray(res[i]) ? res[i] : []; });
+    estado = "listo";
+  } catch (e) {
+    estado = "error";
+  }
+}
+
+// --- Escena ---
+let img = {};
+let estrellas = [];
+const ALIEN_VICTORIA = { y: 768, frames: 8, ms: 110 };   // frames 64-71 de alien.png (celdas de 128x96)
+let botones = [];
+let raton = null;
+
+function sacarEstrellas() {
+  // los puntos más brillantes del cielo del título, a media luz, como polvo en el cristal
+  const c = document.createElement("canvas");
+  c.width = img.cielo.width; c.height = img.cielo.height;
+  const x = c.getContext("2d");
+  x.drawImage(img.cielo, 0, 0);
+  const d = x.getImageData(0, 0, c.width, 140).data;
+  for (let yy = 0; yy < 140; yy++) for (let xx = 0; xx < W; xx++) {
+    const i = (yy * c.width + xx) * 4;
+    if (d[i] > 200 && d[i + 1] > 200 && d[i + 2] > 200 && !(xx > 330 && xx < 450 && yy < 120))
+      estrellas.push({ x: xx, y: yy + 4, c: [d[i] >> 1, d[i + 1] >> 1, d[i + 2] >> 1], f: Math.random() * 6.28 });
+  }
+}
+
+function boton(x, y, w, h, texto, foco, accion) {
+  const encima = raton && raton.x >= x && raton.x < x + w && raton.y >= y && raton.y < y + h;
+  nueve(foco || encima ? img.activo : img.normal, x, y, w, h);
+  centrado(NEGRITA, texto, x + w / 2, y + 3, foco ? AMARILLO : (encima ? "#ffffff" : CLARO));
+  botones.push({ x, y, w, h, accion });
+}
+
+function elegir(t) { if (t !== tabla) { tabla = t; cambio = performance.now(); } }
+
+function dibujar(ms) {
+  const t = ms / 1000;
+  botones = [];
+  if (demo && ms - cambio > DEMO_SEG * 1000 && estado === "listo") {
+    tabla = TABLAS[(TABLAS.indexOf(tabla) + 1) % TABLAS.length];
+    cambio = ms;
+  }
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, W, H);
+  for (const e of estrellas) {
+    const a = 0.65 + 0.35 * Math.sin(t * 1.6 + e.f);
+    ctx.fillStyle = "rgb(" + e.c.map(v => Math.round(v * a)).join(",") + ")";
+    ctx.fillRect(e.x, e.y, 1, 1);
+  }
+  ctx.drawImage(img.logo, Math.round((W - img.logo.width) / 2), 26);
+  centrado(TEXTO, "LA INVASIÓN DE QUINTANA", W / 2, 92, AMARILLO);
+  centrado(NEGRITA, "LOS MEJORES DEL BARRIO", W / 2, 122, CLARO, 2);
+
+  // pestañas: botones de cabina
+  const bw = 84, sep = 6, x0 = Math.round((W - (bw * 5 + sep * 4)) / 2);
+  TABLAS.forEach((k, i) => boton(x0 + i * (bw + sep), 160, bw, 17, PESTANA[k], k === tabla, () => { demo = false; elegir(k); }));
+  centrado(TEXTO, EXPLICA[tabla], W / 2, 186, GRIS);
+
+  // cabecera de la tabla
+  const xPuesto = 134, xIni = 186, xMarca = 380;
+  derecha(NEGRITA, "PUESTO", xPuesto, 210, GRIS);
+  escribir(NEGRITA, "INICIALES", xIni, 210, GRIS);
+  derecha(NEGRITA, COLUMNA[tabla], xMarca, 210, GRIS);
+  ctx.fillStyle = RAYA;
+  for (let xx = 90; xx < 382; xx += 2) ctx.fillRect(xx, 223, 1, 1);
+
+  // filas: entran una a una al cambiar de tabla, como en las recreativas
+  const filas = (datos && datos[tabla]) || [];
+  const visibles = Math.floor((ms - cambio) / 45);
+  let y = 232;
+  for (let i = 0; i < FILAS; i++) {
+    if (i < visibles) {
+      const col = ARCO[i];
+      derecha(NEGRITA, String(i + 1), xPuesto, y, col, 2);
+      if (estado === "listo" && filas[i]) {
+        escribir(NEGRITA, String(filas[i].iniciales || "???"), xIni, y, col, 2);
+        derecha(NEGRITA, textoValor(tabla, filas[i]), xMarca, y, col, 2);
+      } else {
+        escribir(NEGRITA, "- - -", xIni, y, TENUE, 2);
+        derecha(NEGRITA, "- - -", xMarca, y, TENUE, 2);
+      }
+    }
+    y += 26;
+  }
+  if (estado === "cargando") centrado(TEXTO, "CARGANDO LOS RÉCORDS...", W / 2, 236 + 26 * 4, AMARILLO);
+  if (estado === "error") centrado(TEXTO, "SIN CONEXIÓN CON LOS RÉCORDS", W / 2, 236 + 26 * 4, AMARILLO);
+  if (estado === "listo" && filas.length === 0 && visibles >= FILAS) centrado(NEGRITA, "¡SÉ EL PRIMERO!", W / 2, 232 + 26 * 4 + 6, AMARILLO, 2);
+
+  // el Alien se ríe a un lado (animación de victoria) y su platillo espera aparcado al otro
+  const f = Math.floor(ms / ALIEN_VICTORIA.ms) % ALIEN_VICTORIA.frames;
+  ctx.drawImage(img.alien, f * 128, ALIEN_VICTORIA.y, 128, 96, 22 - 38, y - 4 - 94, 128, 96);
+  ctx.drawImage(img.platillo, W - 22 - img.platillo.width, y - 70 + Math.round(Math.sin(t * 2.2) * 2));
+
+  // moneda que parpadea y placa de la cabina
+  y += 10;
+  if (Math.floor(t * 1.6) % 2 === 0) centrado(NEGRITA, "INSERTE 25 PTAS", W / 2, y, AMARILLO);
+  centrado(TEXTO, "TÚ TAMBIÉN PUEDES SALIR: PONTE TUS INICIALES EN EL JUEGO", W / 2, y + 18, GRIS);
+  ctx.fillStyle = "#28223f";
+  for (let xx = 0; xx < W; xx += 2) ctx.fillRect(xx, H - 30, 1, 1);
+  const volver = "◄ VOLVER";
+  const encima = raton && raton.x >= 10 && raton.x < 24 + ancho(TEXTO, volver) && raton.y >= H - 26 && raton.y < H - 6;
+  escribir(TEXTO, volver, 16, H - 22, encima ? AMARILLO : CLARO);
+  botones.push({ x: 10, y: H - 26, w: ancho(TEXTO, volver) + 14, h: 20, accion: () => { location.href = "../"; } });
+  derecha(TEXTO, "CRÉDITOS 00", W - 16, H - 22, GRIS);
+  centrado(TEXTO, "2026 ROJIFERIO PRODUCTIONS", W / 2, H - 22, TENUE);
+  requestAnimationFrame(dibujar);
+}
+
+// Ratón/dedo en coordenadas del lienzo
+function aLienzo(ev) {
+  const r = lienzo.getBoundingClientRect();
+  return { x: (ev.clientX - r.left) * W / r.width, y: (ev.clientY - r.top) * H / r.height };
+}
+function enBoton(p) { return botones.find(b => p.x >= b.x && p.x < b.x + b.w && p.y >= b.y && p.y < b.y + b.h); }
+lienzo.addEventListener("pointermove", (ev) => { raton = aLienzo(ev); lienzo.style.cursor = enBoton(raton) ? "pointer" : "default"; });
+lienzo.addEventListener("pointerleave", () => { raton = null; });
+lienzo.addEventListener("click", (ev) => { const b = enBoton(aLienzo(ev)); if (b) b.accion(); });
+addEventListener("keydown", (ev) => {
+  const i = TABLAS.indexOf(tabla);
+  if (ev.key === "ArrowRight") { demo = false; elegir(TABLAS[(i + 1) % TABLAS.length]); }
+  else if (ev.key === "ArrowLeft") { demo = false; elegir(TABLAS[(i + TABLAS.length - 1) % TABLAS.length]); }
+  else if (ev.key === "Escape" || ev.key === "Backspace") location.href = "../";
+});
+
+Promise.all([cargar("../img/cielo.png"), cargar("../img/logo.png"), cargar("../img/platillo.png"),
+  cargar("../img/alien.png"), cargar("../img/boton_normal.png"), cargar("../img/boton_activo.png"),
+  cargarFuente(NEGRITA, "fuente"), cargarFuente(TEXTO, "fuente_texto")])
+  .then(([cielo, logo, platillo, alien, normal, activo]) => {
+    img = { cielo, logo, platillo, alien, normal, activo };
+    sacarEstrellas();
+    cambio = performance.now();
+    leer().then(() => { cambio = performance.now(); });
+    requestAnimationFrame(dibujar);
+  })
+  .catch(() => { document.body.innerHTML = '<p class="sin">Récords de UFO SEPU: no se han podido cargar.</p>'; });
+</script>
+</body>
+</html>
