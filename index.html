@@ -2,7 +2,7 @@
 <!-- Cuenta atrás para el lanzamiento de UFO SEPU (1 de diciembre). Página de entrada de la repo pública: se dibuja en un
      lienzo de 480x270 como el juego (fondo del título, logo, fuente ufo_negrita). Cuando llega la hora salen dos
      botones: JUGAR (al juego, juego/; en iPhone antes explica cómo añadirlo a la pantalla de inicio) y DESCARGAR PARA
-     PC (el instalador de Windows). Abajo, siempre, el botón RÉCORDS (records/). Para verla antes de hora: ?ya
+     PC (el instalador de Windows). Abajo, siempre, los botones RÉCORDS (records/) y AYUDA (soporte/). Para verla antes de hora: ?ya
      (y &plataforma=ios).
      La monta Tools/web/publicar_demo.sh junto con las imágenes de img/. -->
 <html lang="es">
@@ -39,6 +39,7 @@
 const LANZAMIENTO = Date.parse("2026-12-01T00:00:00+01:00");
 const JUEGO = "juego/";
 const RECORDS = "records/";
+const SOPORTE = "soporte/";
 // El instalador de Windows va en la última Release de la repo pública (lo sube publicar_demo.sh desde el lanzamiento)
 const INSTALADOR = "https://github.com/rojiferiodeveloper/UFOsepu-game/releases/latest/download/UFO_SEPU_instalador.exe";
 // Fichas de las tiendas: vacías = no sale el botón (se rellenan cuando estén publicadas)
@@ -178,7 +179,10 @@ function dibujar(ms) {
   } else {
     eleccion(ms);
   }
-  if (!ayudaIOS) boton(170, 244, 140, 20, "► RÉCORDS", () => ir(RECORDS), false);
+  if (!ayudaIOS) {
+    boton(116, 244, 120, 20, "► RÉCORDS", () => ir(RECORDS), false);
+    boton(244, 244, 120, 20, "AYUDA", () => ir(SOPORTE), false);
+  }
   requestAnimationFrame(dibujar);
 }
 
