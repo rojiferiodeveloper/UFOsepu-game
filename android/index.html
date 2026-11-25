@@ -1,0 +1,100 @@
+<!doctype html>
+<!-- Cómo descargar UFO SEPU en Android mientras está en prueba cerrada de Google Play (android/): unirse al grupo de
+     Google, hacerse tester y descargarlo. Se llega desde el botón ANDROID de la portada. Mismo estilo que soporte/.
+     GRUPO = el grupo de Google de los testers (con «cualquiera puede unirse»), que está como lista de testers en la
+     prueba cerrada de Play Console; vacío = los pasos salen como PRÓXIMAMENTE. La sube Tools/web/publicar_demo.sh. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Descargar en Android · UFO SEPU</title>
+<meta name="description" content="Cómo descargar UFO SEPU: la invasión de Quintana en Android (prueba en Google Play).">
+<link rel="icon" href="../img/icono.png">
+<style>
+  :root { --fondo: #0e0a18; --papel: #17112a; --texto: #e4def5; --suave: #a9a2c4; --amarillo: #fad448; --borde: #3a2f5c;
+    --rojo: #e2464f; }
+  html { background: var(--fondo); }
+  body { margin: 0; color: var(--texto); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px 64px; }
+  .logo { display: block; margin: 0 auto 8px; width: 325px; max-width: 100%; image-rendering: pixelated; }
+  h1 { color: var(--amarillo); font-size: 1.7rem; line-height: 1.25; margin: 16px 0 4px; }
+  h2 { color: var(--amarillo); font-size: 1.15rem; margin: 32px 0 8px; }
+  p, li { color: var(--texto); }
+  .suave { color: var(--suave); }
+  ol.pasos { list-style: none; padding: 0; margin: 24px 0; counter-reset: paso; }
+  ol.pasos > li { counter-increment: paso; background: var(--papel); border: 1px solid var(--borde); border-radius: 8px;
+    padding: 16px 20px 18px 64px; margin: 0 0 12px; position: relative; }
+  ol.pasos > li::before { content: counter(paso); position: absolute; left: 18px; top: 14px; width: 32px; height: 32px;
+    border-radius: 50%; background: var(--amarillo); color: var(--fondo); font-weight: 800; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center; }
+  .paso { font-weight: 700; font-size: 1.1rem; margin: 0 0 4px; }
+  .boton { display: inline-block; margin-top: 10px; padding: 10px 18px; border-radius: 6px; background: var(--rojo);
+    color: #fff; font-weight: 700; text-decoration: none; box-shadow: 0 2px 0 #8a1820; }
+  .boton:hover { background: #f05a62; }
+  .boton.apagado { background: #2a2540; color: #7d7894; box-shadow: none; pointer-events: none; }
+  a { color: var(--amarillo); }
+  nav { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--borde); display: flex; flex-wrap: wrap; gap: 8px 24px; }
+</style>
+</head>
+<body>
+<main>
+<a href="../"><img class="logo" src="../img/logo.png" alt="UFO SEPU: la invasión de Quintana"></a>
+<h1>Descárgalo en Android</h1>
+<p class="suave">De momento el juego está en Google Play como prueba: es gratis y entra cualquiera, solo hay que apuntarse.
+Son tres pasos y se hacen en un minuto.</p>
+
+<ol class="pasos">
+  <li>
+    <p class="paso">Únete al grupo de UFO SEPU</p>
+    <p>Hazlo con la <strong>misma cuenta de Google que usas en Google Play</strong> en tu móvil.</p>
+    <a class="boton" id="grupo" href="#">Unirme al grupo</a>
+  </li>
+  <li>
+    <p class="paso">Hazte tester</p>
+    <p>Abre el enlace con esa misma cuenta y pulsa <strong>Convertirse en tester</strong>.</p>
+    <a class="boton" id="tester" href="#">Hacerme tester</a>
+  </li>
+  <li>
+    <p class="paso">Descárgalo en Google Play</p>
+    <p>Ya te sale en Google Play como cualquier otra app. Las actualizaciones te llegan solas.</p>
+    <a class="boton" id="ficha" href="#">Ir a Google Play</a>
+  </li>
+</ol>
+
+<h2>Si algo no va</h2>
+<ul>
+  <li><strong>«Esta app no está disponible»</strong>: comprueba que estás con la misma cuenta de Google en el grupo, en el
+    enlace de tester y en Google Play. Si tienes varias cuentas en el móvil, cambia de cuenta en Google Play.</li>
+  <li>Tras unirte, <strong>Google puede tardar un rato</strong> en dejarte descargarlo. Si no te sale, prueba otra vez en
+    unos minutos.</li>
+  <li>¿Sigue sin ir? Escríbenos a <a href="mailto:rojiferio.developer@gmail.com?subject=Android%20UFO%20SEPU">rojiferio.developer@gmail.com</a>
+    y te echamos una mano. Hay más ayuda en <a href="../soporte/">soporte</a>.</li>
+</ul>
+
+<nav>
+  <a href="../">Inicio</a>
+  <a href="../records/">Récords</a>
+  <a href="../soporte/">Soporte</a>
+  <a href="../privacidad/">Política de privacidad</a>
+</nav>
+<p class="suave">2026 Rojiferio Productions</p>
+</main>
+<script>
+"use strict";
+// El grupo de Google de los testers (con «cualquiera puede unirse»). Vacío = el paso 1 sale como PRÓXIMAMENTE.
+const GRUPO = "https://groups.google.com/g/ufo-sepu-testers";
+const PAQUETE = "com.rojiferiodev.ufosepu";
+const ENLACES = {
+  grupo: GRUPO,
+  tester: "https://play.google.com/apps/testing/" + PAQUETE,
+  ficha: "https://play.google.com/store/apps/details?id=" + PAQUETE,
+};
+const listo = !!ENLACES.grupo;
+for (const [id, url] of Object.entries(ENLACES)) {
+  const a = document.getElementById(id);
+  if (listo) { a.href = url; a.target = "_blank"; a.rel = "noopener"; }
+  else { a.classList.add("apagado"); a.textContent = "Próximamente"; a.removeAttribute("href"); }
+}
+</script>
+</body>
+</html>

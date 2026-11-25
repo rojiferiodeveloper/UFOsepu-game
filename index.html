@@ -1,27 +1,23 @@
 <!doctype html>
 <!-- Cuenta atrás para el lanzamiento de UFO SEPU (1 de diciembre). Página de entrada de la repo pública: se dibuja en un
-     lienzo de 480x270 como el juego (fondo del título, logo, fuente ufo_negrita). Cuando llega la hora salen dos
-     botones: JUGAR (al juego, juego/; en iPhone antes explica cómo añadirlo a la pantalla de inicio) y DESCARGAR PARA
-     PC (el instalador de Windows). Abajo, siempre, los botones RÉCORDS (records/) y AYUDA (soporte/). Para verla antes de hora: ?ya
-     (y &plataforma=ios).
+     lienzo de 480x270 como el juego (fondo del título, logo, fuente ufo_negrita). Cuando llega la hora salen tres
+     botones, uno por plataforma: IPHONE (la ficha del App Store), ANDROID (android/: cómo unirse a la prueba cerrada por
+     el grupo de Google) y PC (el instalador de Windows). El de tu aparato sale resaltado; el que aún no está listo sale
+     en gris con PRÓXIMAMENTE. Abajo, siempre, RÉCORDS (records/) y AYUDA (soporte/).
+     Para verla antes de hora: ?ya, y &plataforma=ios|android|pc para ver cada aparato; &todo para verlo todo listo.
      La monta Tools/web/publicar_demo.sh junto con las imágenes de img/. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UFO SEPU: la invasión de Quintana</title>
-<meta name="description" content="UFO SEPU: la invasión de Quintana. Lanzamiento el 1 de diciembre en iPhone, Android y PC.">
+<meta name="description" content="UFO SEPU: la invasión de Quintana. Un juego de pixel art del barrio de Quintana para iPhone, Android y PC.">
 <meta property="og:title" content="UFO SEPU: la invasión de Quintana">
 <meta property="og:description" content="Lanzamiento el 1 de diciembre. iPhone, Android y PC.">
 <meta property="og:image" content="https://rojiferiodeveloper.github.io/UFOsepu-game/img/cielo.png">
 <meta name="theme-color" content="#0e0a18">
 <link rel="icon" href="img/icono.png">
 <link rel="apple-touch-icon" href="img/icono.png">
-<!-- añadida a la pantalla de inicio (iPhone), se abre como app a pantalla completa y salta directa al juego -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="UFO SEPU">
 <style>
   html, body { margin: 0; height: 100%; background: #07050c; overflow: hidden; }
   body { display: flex; align-items: center; justify-content: center; }
@@ -37,26 +33,36 @@
 "use strict";
 // 1 de diciembre de 2026, 00:00 en Madrid (hora de invierno, UTC+1)
 const LANZAMIENTO = Date.parse("2026-12-01T00:00:00+01:00");
-const JUEGO = "juego/";
 const RECORDS = "records/";
 const SOPORTE = "soporte/";
-// El instalador de Windows va en la última Release de la repo pública (lo sube publicar_demo.sh desde el lanzamiento)
+const ANDROID = "android/";
+// iPhone/iPad: la ficha del App Store. El botón se activa solo cuando Apple dice que la app ya está publicada (consulta
+// a itunes.apple.com al cargar), así no hay que volver a subir la web el día que salga.
+const APP_ID = "6838638980";
+const TIENDA_IOS = "https://apps.apple.com/es/app/id" + APP_ID;
+// Android: true cuando la prueba cerrada esté lista (el grupo y el enlace de tester van en android/index.html)
+const ANDROID_LISTO = true;
+// PC: el instalador de Windows, en la última Release de la repo pública (lo sube Tools/build/publicar_windows.sh)
 const INSTALADOR = "https://github.com/rojiferiodeveloper/UFOsepu-game/releases/latest/download/UFO_SEPU_instalador.exe";
-// Fichas de las tiendas: vacías = no sale el botón (se rellenan cuando estén publicadas)
-const TIENDA_ANDROID = "";
-const TIENDA_IOS = "";
+const PC_LISTO = true;
 const W = 480, H = 270;
 const AMARILLO = "#fad448", CLARO = "#d9d1f2", GRIS = "#9994b3", OSCURO = "#0e0a18", ROJO = "#e2464f";
 
-// Para ver la página de lanzamiento antes de hora: ?ya (y &plataforma=ios para ver lo del iPhone)
+// Para ver la página de lanzamiento antes de hora: ?ya (&plataforma=ios|android|pc, &todo = todo listo)
 const PARAMS = new URLSearchParams(location.search);
 const YA = PARAMS.has("ya");
+const TODO = PARAMS.has("todo");
 const UA = navigator.userAgent;
-const ES_IOS = PARAMS.get("plataforma") === "ios" || /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
-const ES_APP = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches;
-
-// Abierta desde el icono de la pantalla de inicio (iPhone): directamente al juego
-if ((YA || Date.now() >= LANZAMIENTO) && ES_APP) location.replace(JUEGO);
+const PLATAFORMA = PARAMS.get("plataforma") || (/iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1) ? "ios"
+  : /Android/.test(UA) ? "android" : "pc");
+let iosListo = TODO;
+if (!TODO) {
+  // ¿ya está en el App Store? (JSONP: la API de Apple no deja leerla con fetch desde otra web)
+  window.alAppStore = (r) => { iosListo = !!(r && r.resultCount > 0); };
+  const sc = document.createElement("script");
+  sc.src = "https://itunes.apple.com/lookup?id=" + APP_ID + "&country=es&callback=alAppStore";
+  document.head.appendChild(sc);
+}
 
 const lienzo = document.getElementById("lienzo");
 const ctx = lienzo.getContext("2d");
@@ -179,56 +185,44 @@ function dibujar(ms) {
   } else {
     eleccion(ms);
   }
-  if (!ayudaIOS) {
-    boton(116, 244, 120, 20, "► RÉCORDS", () => ir(RECORDS), false);
-    boton(244, 244, 120, 20, "AYUDA", () => ir(SOPORTE), false);
-  }
+  boton(116, 244, 120, 20, "► RÉCORDS", () => ir(RECORDS), false);
+  boton(244, 244, 120, 20, "AYUDA", () => ir(SOPORTE), false);
   requestAnimationFrame(dibujar);
 }
 
-// --- Tras el lanzamiento: dos botones grandes ---
-// ► JUGAR lleva al juego (juego/): en Android el propio juego se pone a pantalla completa y en horizontal al pulsar su
-// JUGAR; en iPhone/iPad antes se explica cómo añadirlo a la pantalla de inicio (Safari no deja la pantalla completa).
-// DESCARGAR PARA PC baja el instalador de Windows. Abajo: próximamente en Google Play y App Store (o sus botones).
+// --- Tras el lanzamiento: un botón grande por plataforma ---
+// El de tu aparato va en rojo; los otros, oscuros con borde; el que aún no está listo, en gris con PRÓXIMAMENTE.
 let botones = [];
-let ayudaIOS = false;
-function boton(x, y, w, h, texto, accion, principal, sub) {
-  const encima = raton && raton.x >= x && raton.x < x + w && raton.y >= y && raton.y < y + h;
-  ctx.fillStyle = principal ? (encima ? "#f05a62" : ROJO) : (encima ? "rgba(60,48,96,0.95)" : "rgba(30,22,52,0.92)");
+function boton(x, y, w, h, texto, accion, principal, sub, apagado) {
+  const encima = !apagado && raton && raton.x >= x && raton.x < x + w && raton.y >= y && raton.y < y + h;
+  if (apagado) ctx.fillStyle = "rgba(30,26,42,0.85)";
+  else ctx.fillStyle = principal ? (encima ? "#f05a62" : ROJO) : (encima ? "rgba(60,48,96,0.95)" : "rgba(30,22,52,0.92)");
   ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = principal ? "#8a1820" : AMARILLO;
-  if (principal) ctx.fillRect(x, y + h, w, 2);
-  else { ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y + h - 1, w, 1); ctx.fillRect(x, y, 1, h); ctx.fillRect(x + w - 1, y, 1, h); }
-  const esc = principal ? 2 : 1;
-  const ty = sub ? y + 9 : y + Math.round((h - 12 * esc) / 2);
-  centrado(texto, x + w / 2, ty, principal ? "#ffffff" : CLARO, esc);
-  if (sub) centrado(sub, x + w / 2, y + h - 17, principal ? "#ffe3e4" : GRIS);
-  botones.push({ x, y, w, h, accion });
+  if (apagado) { ctx.fillStyle = "#4a4460"; ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y + h - 1, w, 1); ctx.fillRect(x, y, 1, h); ctx.fillRect(x + w - 1, y, 1, h); }
+  else if (principal) { ctx.fillStyle = "#8a1820"; ctx.fillRect(x, y + h, w, 2); }
+  else { ctx.fillStyle = AMARILLO; ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y + h - 1, w, 1); ctx.fillRect(x, y, 1, h); ctx.fillRect(x + w - 1, y, 1, h); }
+  const grande = h >= 40;
+  const esc = grande ? 2 : 1;
+  const ty = sub ? y + (grande ? 12 : 4) : y + Math.round((h - 12 * esc) / 2);
+  centrado(texto, x + w / 2, ty, apagado ? "#7d7894" : (principal ? "#ffffff" : CLARO), esc);
+  if (sub) centrado(sub, x + w / 2, y + h - 18, apagado ? "#7d7894" : (principal ? "#ffe3e4" : GRIS));
+  if (!apagado) botones.push({ x, y, w, h, accion });
 }
 
 function eleccion(ms) {
   ctx.globalAlpha = Math.min(1, (ms - finDesde) / 400);
   ctx.fillStyle = "rgba(8,5,15,0.78)";
   ctx.fillRect(0, 84, W, 186);
-  if (ayudaIOS) {
-    centrado("PARA JUGAR A PANTALLA COMPLETA", W / 2, 92, AMARILLO, 1);
-    const pasos = ["1. Pulsa el botón COMPARTIR de Safari (el cuadrado con la flecha).",
-      "2. Elige AÑADIR A PANTALLA DE INICIO.", "3. Abre UFO SEPU desde ese icono: se juega a pantalla completa."];
-    pasos.forEach((t, i) => escribir(t, 40, 114 + i * 18, CLARO));
-    boton(140, 172, 200, 40, "► JUGAR YA", () => ir(JUEGO), true);
-    boton(190, 224, 100, 20, "◄ VOLVER", () => { ayudaIOS = false; }, false);
-  } else {
-    centrado("¡YA DISPONIBLE!", W / 2, 92, AMARILLO, 2);
-    const bw = 190, bh = 60, sep = 12, x0 = Math.round((W - bw * 2 - sep) / 2), y0 = 124;
-    boton(x0, y0, bw, bh, "► JUGAR", () => { if (ES_IOS) ayudaIOS = true; else ir(JUEGO); }, true, "EN EL MÓVIL O EL NAVEGADOR");
-    boton(x0 + bw + sep, y0, bw, bh, "DESCARGAR", () => ir(INSTALADOR), true, "PARA PC (WINDOWS) · 40 MB");
-    if (TIENDA_ANDROID || TIENDA_IOS) {
-      if (TIENDA_ANDROID) boton(x0, 206, bw, 22, "GOOGLE PLAY", () => ir(TIENDA_ANDROID), false);
-      if (TIENDA_IOS) boton(x0 + bw + sep, 206, bw, 22, "APP STORE", () => ir(TIENDA_IOS), false);
-    } else {
-      centrado("PRÓXIMAMENTE EN GOOGLE PLAY Y APP STORE", W / 2, 216, CLARO);
-    }
-  }
+  centrado("¡YA DISPONIBLE!", W / 2, 92, AMARILLO, 2);
+  const opciones = [
+    { id: "ios", texto: "IPHONE", listo: iosListo, sub: "Y IPAD · APP STORE", ir: TIENDA_IOS },
+    { id: "android", texto: "ANDROID", listo: ANDROID_LISTO || TODO, sub: "VERSIÓN DE PRUEBA", ir: ANDROID },
+    { id: "pc", texto: "PC", listo: PC_LISTO || TODO, sub: "WINDOWS · 40 MB", ir: INSTALADOR },
+  ];
+  const bw = 142, bh = 62, sep = 9, x0 = Math.round((W - bw * 3 - sep * 2) / 2), y0 = 124;
+  opciones.forEach((o, i) => boton(x0 + i * (bw + sep), y0, bw, bh, o.texto, () => ir(o.ir), o.id === PLATAFORMA,
+    o.listo ? o.sub : "PRÓXIMAMENTE", !o.listo));
+  centrado("GRATIS · SIN ANUNCIOS · SIN COMPRAS", W / 2, 206, CLARO);
   ctx.globalAlpha = 1;
 }
 
