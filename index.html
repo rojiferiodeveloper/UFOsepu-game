@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Cuenta atrás para el lanzamiento de UFO SEPU (1 de diciembre). Página de entrada de la repo pública: se dibuja en un
+<!-- Cuenta atrás para el lanzamiento de UFO SEPU (sábado 28 de noviembre, 19:00). Página de entrada de la repo pública: se dibuja en un
      lienzo de 480x270 como el juego (fondo del título, logo, fuente ufo_negrita). Cuando llega la hora salen tres
      botones, uno por plataforma: IPHONE (la ficha del App Store), ANDROID (android/: cómo unirse a la prueba cerrada por
      el grupo de Google) y PC (el instalador de Windows). El de tu aparato sale resaltado; el que aún no está listo sale
@@ -13,7 +13,7 @@
 <title>UFO SEPU: la invasión de Quintana</title>
 <meta name="description" content="UFO SEPU: la invasión de Quintana. Un juego de pixel art del barrio de Quintana para iPhone, Android y PC.">
 <meta property="og:title" content="UFO SEPU: la invasión de Quintana">
-<meta property="og:description" content="Lanzamiento el 1 de diciembre. iPhone, Android y PC.">
+<meta property="og:description" content="Lanzamiento el sábado 28 de noviembre a las 19:00. iPhone, Android y PC.">
 <meta property="og:image" content="https://rojiferiodeveloper.github.io/UFOsepu-game/img/cielo.png">
 <meta name="theme-color" content="#0e0a18">
 <link rel="icon" href="img/icono.png">
@@ -27,12 +27,12 @@
 </style>
 </head>
 <body>
-<canvas id="lienzo" width="480" height="270" aria-label="Cuenta atrás para el lanzamiento de UFO SEPU el 1 de diciembre"></canvas>
-<noscript>UFO SEPU: la invasión de Quintana. Lanzamiento el 1 de diciembre.</noscript>
+<canvas id="lienzo" width="480" height="270" aria-label="Cuenta atrás para el lanzamiento de UFO SEPU el 28 de noviembre a las 19:00"></canvas>
+<noscript>UFO SEPU: la invasión de Quintana. Lanzamiento el sábado 28 de noviembre a las 19:00.</noscript>
 <script>
 "use strict";
-// 1 de diciembre de 2026, 00:00 en Madrid (hora de invierno, UTC+1)
-const LANZAMIENTO = Date.parse("2026-12-01T00:00:00+01:00");
+// Sábado 28 de noviembre de 2026, 19:00 en Madrid (hora de invierno, UTC+1). Antes era el 1 de diciembre: se adelantó.
+const LANZAMIENTO = Date.parse("2026-11-28T19:00:00+01:00");
 const RECORDS = "records/";
 const SOPORTE = "soporte/";
 const ANDROID = "android/";
@@ -180,7 +180,7 @@ function dibujar(ms) {
     });
     ctx.fillStyle = "rgba(8,5,15,0.7)";
     ctx.fillRect(0, 196, W, 40);
-    centrado("1 DE DICIEMBRE", W / 2, 202, AMARILLO, 2);
+    centrado("28 DE NOVIEMBRE · 19:00 H", W / 2, 202, AMARILLO, 2);
     centrado("IPHONE · ANDROID · PC", W / 2, 224, CLARO);
   } else {
     eleccion(ms);
@@ -247,7 +247,7 @@ lienzo.addEventListener("click", (ev) => {
 
 Promise.all([cargar("img/cielo.png"), cargar("img/logo.png"), cargar("img/platillo.png"), cargarFuente()])
   .then(([c, l, p]) => { cielo = c; logo = l; platillo = p; requestAnimationFrame(dibujar); })
-  .catch(() => { document.body.innerHTML = '<p style="color:#fad448;font:16px monospace;text-align:center;padding:16px">UFO SEPU: la invasión de Quintana. Lanzamiento el 1 de diciembre.</p>'; });
+  .catch(() => { document.body.innerHTML = '<p style="color:#fad448;font:16px monospace;text-align:center;padding:16px">UFO SEPU: la invasión de Quintana. Lanzamiento el sábado 28 de noviembre a las 19:00.</p>'; });
 </script>
 </body>
 </html>

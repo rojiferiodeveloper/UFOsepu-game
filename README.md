@@ -1,3 +1,3 @@
 # UFO SEPU: la invasión de Quintana
 
-Lanzamiento el 1 de diciembre en iPhone, Android y PC: https://rojiferiodeveloper.github.io/UFOsepu-game/
+Lanzamiento el sábado 28 de noviembre a las 19:00 en iPhone, Android y PC: https://rojiferiodeveloper.github.io/UFOsepu-game/
