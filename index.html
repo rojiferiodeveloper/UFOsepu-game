@@ -36,10 +36,10 @@ const LANZAMIENTO = Date.parse("2026-11-28T19:00:00+01:00");
 const RECORDS = "records/";
 const SOPORTE = "soporte/";
 const ANDROID = "android/";
-// iPhone/iPad: la ficha del App Store. El botón se activa solo cuando Apple dice que la app ya está publicada (consulta
-// a itunes.apple.com al cargar), así no hay que volver a subir la web el día que salga.
+// iPhone/iPad: la ficha del App Store (publicada). Sin país en el enlace: Apple lleva a la tienda de cada uno.
 const APP_ID = "6838638980";
-const TIENDA_IOS = "https://apps.apple.com/es/app/id" + APP_ID;
+const TIENDA_IOS = "https://apps.apple.com/app/id" + APP_ID;
+const IOS_LISTO = true;
 // Android: true cuando la prueba cerrada esté lista (el grupo y el enlace de tester van en android/index.html)
 const ANDROID_LISTO = true;
 // PC: el instalador de Windows, en la última Release de la repo pública (lo sube Tools/build/publicar_windows.sh)
@@ -55,14 +55,7 @@ const TODO = PARAMS.has("todo");
 const UA = navigator.userAgent;
 const PLATAFORMA = PARAMS.get("plataforma") || (/iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1) ? "ios"
   : /Android/.test(UA) ? "android" : "pc");
-let iosListo = TODO;
-if (!TODO) {
-  // ¿ya está en el App Store? (JSONP: la API de Apple no deja leerla con fetch desde otra web)
-  window.alAppStore = (r) => { iosListo = !!(r && r.resultCount > 0); };
-  const sc = document.createElement("script");
-  sc.src = "https://itunes.apple.com/lookup?id=" + APP_ID + "&country=es&callback=alAppStore";
-  document.head.appendChild(sc);
-}
+const iosListo = IOS_LISTO || TODO;
 
 const lienzo = document.getElementById("lienzo");
 const ctx = lienzo.getContext("2d");
